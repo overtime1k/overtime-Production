@@ -295,6 +295,92 @@ header label {
     text-decoration: line-through;
     margin-left: 1rem;
 }
+/* Like Counter Styles */
+.like-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.like-counter .fa-heart {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.7rem;
+}
+
+.like-counter .fa-heart:hover {
+    transform: scale(1.2);
+}
+
+.like-counter .fa-heart.liked {
+    color: #e74c3c;
+}
+
+.like-counter .like-count {
+    font-weight: 500;
+}
+
+.like-counter-top {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    z-index: 2;
+    backdrop-filter: blur(5px);
+}
+
+.like-counter-top .fa-heart {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.6rem;
+    color: #fff;
+}
+
+.like-counter-top .fa-heart:hover {
+    transform: scale(1.2);
+}
+
+.like-counter-top .fa-heart.liked {
+    color: #e74c3c;
+}
+
+.like-counter-top .like-count {
+    font-weight: 500;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.products .box .content {
+    padding: 2rem;
+    text-align: center;
+}
+
+.products .box .content h3 {
+    font-size: 2rem;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.products .box .content .price {
+    font-size: 2rem;
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.products .box .content .price span {
+    font-size: 1.5rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 1rem;
+}
+
 
 /* Responsive Design */
 @media (max-width: 991px) {
