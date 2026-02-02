@@ -29,6 +29,22 @@
     --transition-medium: 0.3s ease;
 }
 
+#canvas-container {
+    position: fixed;
+    /* Keeps it locked to the screen while you scroll */
+    top: 18rem;
+    left: 0;
+    width: 100%;
+    height: 100svh;
+    z-index: 9999;
+    /* High number puts it ON TOP of everything */
+    pointer-events: none;
+    /* CRITICAL: Lets clicks pass through to the links below */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -122,7 +138,7 @@ header .navbar a {
 }
 
 header .navbar a:hover {
-    color: ##9a2a1d
+    color: #9a2a1d
 }
 
 header input,
@@ -144,6 +160,8 @@ header label {
     background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
     position: relative;
     overflow: hidden;
+    gap: 2px;
+        /* Increased gap to separate the two h3 elements */
 }
 
 .home::before {
@@ -159,6 +177,7 @@ header label {
 .home .content {
     text-align: center;
     z-index: 1;
+    padding: 2px;
 }
 
 .home .content h3 {
@@ -207,6 +226,61 @@ header label {
     display: block;
 }
 
+/* here starts the Gallery Container css */
+.video-gallery {
+    padding: 40px 20px;
+    
+    
+}
+
+.gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.gallery-container h2 {
+    margin-bottom: 30px;
+    font-family: sans-serif;
+}
+
+/* Grid Layout for Videos */
+.video-grid {
+    display: grid;
+    /* Default to 1 column on mobile phones */
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* On screens larger than 768px (Tablets/Computers), switch to 2 columns */
+@media (min-width: 768px) {
+    .video-grid {
+    grid-template-columns: 1fr 1fr;
+    max-width: 800px;
+    margin: 0 auto;
+    }
+}
+
+/* Video Wrapper to maintain 16:9 Aspect Ratio */
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+/* here ends the Gallery Container css */
+
 /* Products Section */
 .products {
     background: #0a0a0a;
@@ -221,16 +295,17 @@ header label {
 /* ===================================
    PRODUCT GRID
    =================================== */
-.product-grid {
+.product-grid { 
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2.5rem;
-    padding: 2rem 0;
-}
+     grid-template-columns: repeat(auto-fill, minmax(200px, max-content)); 
+     gap: 1.5rem; 
+     padding: 2rem 0; 
+     justify-content: center; 
+    }
 
 @media (max-width: 768px) {
     .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 2rem;
     }
 }
