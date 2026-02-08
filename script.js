@@ -27,33 +27,35 @@ function showNotification(message, duration = 2500) {
 // SLIDESHOW FUNCTIONALITY
 // ===================================
 
-/**
- * Initialize slideshow for a product card
- */
 function initializeSlideshow(card) {
-    const slidesContainer = card.querySelector('.slideshow-slides');
-    const slides = card.querySelectorAll('.slideshow-slide');
-    const dots = card.querySelectorAll('.slideshow-dot');
+    const slides = card.querySelectorAll('.slides img');
+    const dots = card.querySelectorAll('.dot');
 
-    if (slides.length <= 1) return; // No slideshow needed for single image
+    if (slides.length === 0 || dots.length === 0) return;
 
     let currentSlide = 0;
-    let autoSlideInterval = null;
-    let touchStartX = 0;
-    let touchEndX = 0;
+    let autoSlideInterval;
 
     function goToSlide(index) {
+        // Remove all active and prev classes
+        slides.forEach(slide => {
+            slide.classList.remove('active', 'prev');
+        });
+        dots.forEach(dot => {
+            dot.classList.remove('active');
+        });
+
+        // Add prev class to previous slide
+        if (currentSlide !== index) {
+            slides[currentSlide].classList.add('prev');
+        }
+
+        // Update current slide index
         currentSlide = index;
 
-        // Update slide positions
-        slides.forEach((slide, i) => {
-            slide.style.transform = `translateX(${(i - currentSlide) * 100}%)`;
-        });
-
-        // Update dot indicators
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentSlide);
-        });
+        // Add active class to current slide and dot
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
     }
 
     function nextSlide() {
@@ -61,308 +63,426 @@ function initializeSlideshow(card) {
         goToSlide(nextIndex);
     }
 
-    function prevSlide() {
-        const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
-        goToSlide(prevIndex);
-    }
-
-    function startAutoSlide() {
-        autoSlideInterval = setInterval(nextSlide, 2000);
-    }
-
-    function stopAutoSlide() {
-        if (autoSlideInterval) {
-            clearInterval(autoSlideInterval);
-            autoSlideInterval = null;
+    // Auto-slide on hover
+    card.addEventListener('mouseenter', () => {
+        if (slides.length > 1) {
+            autoSlideInterval = setInterval(nextSlide, 2000);
         }
-    }
+    });
 
-    // Event listeners for hover behavior
-    card.addEventListener('mouseenter', startAutoSlide);
     card.addEventListener('mouseleave', () => {
-        stopAutoSlide();
+        clearInterval(autoSlideInterval);
         goToSlide(0); // Reset to first slide
     });
 
-    // Event listeners for dot navigation
+    // Dot navigation
     dots.forEach((dot, index) => {
         dot.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            stopAutoSlide();
+            clearInterval(autoSlideInterval);
             goToSlide(index);
         });
     });
 
-    // Click on slideshow to navigate (next slide on click)
-    slidesContainer.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        stopAutoSlide();
-        nextSlide();
-    });
+    // Initialize first slide as active
+    goToSlide(0);
+}
 
-    // Touch events for swipe on mobile
-    slidesContainer.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, false);
+// ===================================
+// CART STATE MANAGEMENT (ADD THIS)
+// ===================================
 
-    slidesContainer.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        stopAutoSlide();
-        handleSwipe();
-    }, false);
+let cart = [];
 
-    function handleSwipe() {
-        const swipeThreshold = 50; // Minimum distance to register as swipe
-        const difference = touchStartX - touchEndX;
+// Load cart from localStorage on page load
+function loadCart() {
+    const savedCart = localStorage.getItem('vyndetta_cart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+    }
+    updateCartDisplay();
+    updateCartBadge();
+}
 
-        if (Math.abs(difference) > swipeThreshold) {
-            if (difference > 0) {
-                // Swiped left - next slide
-                nextSlide();
-            } else {
-                // Swiped right - previous slide
-                prevSlide();
+// Save cart to localStorage
+function saveCart() {
+    localStorage.setItem('vyndetta_cart', JSON.stringify(cart));
+}
+
+// ===================================
+// CART FUNCTIONALITY (ADD THIS)
+// ===================================
+
+/**
+ * Add item to cart
+ */
+function addToCart(product) {
+    // Check if item already exists in cart
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+        showNotification('Quantity updated in cart!');
+    } else {
+        cart.push({
+            id: product.id,
+            title: product.title,
+            price: product.price,
+            image: product.image,
+            quantity: 1
+        });
+        showNotification('Added to cart!');
+    }
+    
+    saveCart();
+    updateCartDisplay();
+    updateCartBadge();
+    openCart();
+}
+
+/**
+ * Remove item from cart
+ */
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    saveCart();
+    updateCartDisplay();
+    updateCartBadge();
+    showNotification('Item removed from cart');
+}
+
+/**
+ * Update item quantity
+ */
+function updateQuantity(productId, change) {
+    const item = cart.find(item => item.id === productId);
+    
+    if (item) {
+        item.quantity += change;
+        
+        // Remove item if quantity is 0
+        if (item.quantity <= 0) {
+            removeFromCart(productId);
+            return;
+        }
+        
+        saveCart();
+        updateCartDisplay();
+        updateCartBadge();
+    }
+}
+
+/**
+ * Calculate cart total
+ */
+function calculateTotal() {
+    return cart.reduce((total, item) => {
+        return total + (item.price * item.quantity);
+    }, 0);
+}
+
+/**
+ * Get total item count
+ */
+function getTotalItems() {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+}
+
+// ===================================
+// CART UI UPDATES (ADD THIS)
+// ===================================
+
+/**
+ * Update cart display
+ */
+function updateCartDisplay() {
+    const cartItemsContainer = document.getElementById('cart-items');
+    
+    if (!cartItemsContainer) return;
+    
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        `;
+    } else {
+        cartItemsContainer.innerHTML = cart.map(item => `
+            <div class="cart-item" data-id="${item.id}">
+                <img src="${item.image}" alt="${item.title}" class="cart-item-image">
+                <div class="cart-item-details">
+                    <h3 class="cart-item-title">${item.title}</h3>
+                    <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn decrease-qty" data-id="${item.id}">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn increase-qty" data-id="${item.id}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <button class="remove-item" data-id="${item.id}">Remove</button>
+                </div>
+            </div>
+        `).join('');
+        
+        // Add event listeners to quantity buttons
+        document.querySelectorAll('.increase-qty').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                updateQuantity(id, 1);
+            });
+        });
+        
+        document.querySelectorAll('.decrease-qty').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                updateQuantity(id, -1);
+            });
+        });
+        
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(e.currentTarget.dataset.id);
+                removeFromCart(id);
+            });
+        });
+    }
+    
+    // Update totals
+    const total = calculateTotal();
+    const subtotalEl = document.getElementById('cart-subtotal');
+    const totalEl = document.getElementById('cart-total');
+    
+    if (subtotalEl) {
+        subtotalEl.textContent = `$${total.toFixed(2)}`;
+    }
+    if (totalEl) {
+        totalEl.textContent = `$${total.toFixed(2)}`;
+    }
+}
+
+/**
+ * Update cart badge count
+ */
+function updateCartBadge() {
+    const totalItems = getTotalItems();
+    let badge = document.querySelector('.cart-badge');
+    
+    if (totalItems > 0) {
+        if (!badge) {
+            // Create badge if it doesn't exist
+            const cartLink = document.querySelector('a[href="#Cart"]');
+            if (cartLink) {
+                cartLink.style.position = 'relative';
+                badge = document.createElement('span');
+                badge.className = 'cart-badge';
+                cartLink.appendChild(badge);
             }
+        }
+        if (badge) {
+            badge.textContent = totalItems;
+        }
+    } else {
+        if (badge) {
+            badge.remove();
         }
     }
 }
 
 // ===================================
-// ADD TO CART FUNCTIONALITY
+// CART OPEN/CLOSE (ADD THIS)
+// ===================================
+
+function openCart() {
+    const sidebar = document.getElementById('cart-sidebar');
+    const overlay = document.getElementById('cart-overlay');
+    
+    if (sidebar) sidebar.classList.add('active');
+    if (overlay) overlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeCart() {
+    const sidebar = document.getElementById('cart-sidebar');
+    const overlay = document.getElementById('cart-overlay');
+    
+    if (sidebar) sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scrolling
+}
+
+// ===================================
+// ADD TO CART FROM PRODUCT CARDS (ADD THIS)
 // ===================================
 
 /**
- * Handle add to cart button click
+ * Setup "Add to Cart" buttons on product cards
  */
-function handleAddToCart(button) {
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Get product info from data attributes
-        const productId = button.dataset.productId;
-        const productTitle = button.dataset.productTitle;
-        const productPrice = parseFloat(button.dataset.productPrice);
-
-        // Add visual feedback
-        button.classList.add('added');
-        const textSpan = button.querySelector('.add-to-cart-text');
-        const originalText = textSpan.textContent;
-        textSpan.textContent = 'Added!';
-
-        // Log to console (replace with actual cart logic)
-        console.log('Added to cart:', {
-            id: productId,
-            title: productTitle,
-            price: productPrice
+function setupAddToCartButtons() {
+    // Get all shopping cart icons in product cards
+    const cartIcons = document.querySelectorAll('.icons .fa-shopping-cart');
+    
+    cartIcons.forEach((icon, index) => {
+        icon.parentElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Get product info from the card
+            const card = icon.closest('.card-gallery');
+            const titleEl = card.querySelector('.product-title');
+            const priceEl = card.querySelector('.product-price');
+            const imageEl = card.querySelector('.slides img.active') || card.querySelector('.slides img');
+            
+            // Extract data
+            const title = titleEl ? titleEl.textContent.trim() : 'Product';
+            const priceText = priceEl ? priceEl.textContent : '$9.00';
+            const price = parseFloat(priceText.replace('$', '').replace(' USD', '').trim());
+            const image = imageEl ? imageEl.src : '';
+            
+            // Create product object with unique ID
+            const product = {
+                id: Date.now() + index, // More unique ID
+                title: title,
+                price: price,
+                image: image
+            };
+            
+            addToCart(product);
         });
-
-        // Show notification
-        showNotification(`${productTitle} added to cart!`);
-
-        // Add to cart
-        Cart.add({
-            id: productId,
-            title: productTitle,
-            price: productPrice
-        });
-
-        // Reset button after delay
-        setTimeout(() => {
-            button.classList.remove('added');
-            textSpan.textContent = originalText;
-        }, 2000);
     });
 }
 
-
 // ===================================
-// LIKE BUTTON FUNCTIONALITY
+// KEEP YOUR EXISTING showNotification FUNCTION
+// OR UPDATE IT WITH THIS VERSION:
 // ===================================
 
 /**
- * Handle like button click
+ * Show a notification message to the user
  */
-function handleLikeButton(button) {
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const productId = button.dataset.productId;
-        const counterSpan = button.querySelector('.like-counter');
-        const isLiked = button.classList.contains('liked');
-
-        if (isLiked) {
-            // Unlike the product
-            button.classList.remove('liked');
-            Likes.remove(productId);
-            console.log('Unliked product:', productId);
-        } else {
-            // Like the product
-            button.classList.add('liked');
-            Likes.add(productId);
-            console.log('Liked product:', productId);
-
-            // Add a subtle animation
-            button.style.animation = 'none';
-            setTimeout(() => {
-                button.style.animation = 'pulse 0.3s ease';
-            }, 10);
-        }
-
-        // Update counter display
-        const count = Likes.getCount(productId);
-        counterSpan.textContent = count;
-    });
+function showNotification(message, duration = 2500) {
+    // Remove existing notification if any
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 300);
+    }, duration);
 }
 
+
+
+
+
+
+// ===================================
+// ADD TO CART FROM PRODUCT CARDS (ADD THIS)
+// ===================================
+
+/**
+ * Setup "Add to Cart" buttons on product cards
+ */
+function setupAddToCartButtons() {
+    // Get all shopping cart icons in product cards
+    const cartIcons = document.querySelectorAll('.icons .fa-shopping-cart');
+    
+    cartIcons.forEach((icon, index) => {
+        icon.parentElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Get product info from the card
+            const card = icon.closest('.card-gallery');
+            const titleEl = card.querySelector('.product-title');
+            const priceEl = card.querySelector('.product-price');
+            const imageEl = card.querySelector('.slides img.active') || card.querySelector('.slides img');
+            
+            // Extract data
+            const title = titleEl ? titleEl.textContent.trim() : 'Product';
+            const priceText = priceEl ? priceEl.textContent : '$9.00';
+            const price = parseFloat(priceText.replace('$', '').replace(' USD', '').trim());
+            const image = imageEl ? imageEl.src : '';
+            
+            // Create product object with unique ID
+            const product = {
+                id: Date.now() + index, // More unique ID
+                title: title,
+                price: price,
+                image: image
+            };
+            
+            addToCart(product);
+        });
+    });
+}
 // ===================================
 // LIKES MANAGEMENT
 // ===================================
-
-const Likes = {
-    items: {}, // Changed to object to store counts
-
-    add(productId) {
-        if (!this.items[productId]) {
-            this.items[productId] = 0;
-        }
-        this.items[productId] += 1;
-        this.save();
-    },
-
-    remove(productId) {
-        if (this.items[productId]) {
-            this.items[productId] -= 1;
-            if (this.items[productId] <= 0) {
-                delete this.items[productId];
-            }
-        }
-        this.save();
-    },
-
-    has(productId) {
-        return this.items[productId] && this.items[productId] > 0;
-    },
-
-    getCount(productId) {
-        return this.items[productId] || 0;
-    },
-
-    save() {
-        localStorage.setItem('likes', JSON.stringify(this.items));
-    },
-
-    load() {
-        const saved = localStorage.getItem('likes');
-        if (saved) {
-            try {
-                this.items = JSON.parse(saved);
-            } catch (e) {
-                this.items = {};
-            }
-        }
-    }
-};
+// (You can fill this in later)
 
 
 // ===================================
 // CART MANAGEMENT
 // ===================================
+// (You can fill this in later)
 
-const Cart = {
-    items: [],
-
-    add(product) {
-        const existingItem = this.items.find(item => item.id === product.id);
-
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            this.items.push({
-                ...product,
-                quantity: 1
-            });
-        }
-
-        this.save();
-        console.log('Cart updated:', this.items);
-    },
-
-    getCount() {
-        return this.items.reduce((sum, item) => sum + item.quantity, 0);
-    },
-
-    getTotal() {
-        return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    },
-
-    save() {
-        localStorage.setItem('cart', JSON.stringify(this.items));
-    },
-
-    load() {
-        const saved = localStorage.getItem('cart');
-        if (saved) {
-            this.items = JSON.parse(saved);
-        }
-    }
-};
 
 // ===================================
 // INITIALIZATION
 // ===================================
 
-/**
- * Initialize all product cards
- */
 function init() {
-    // Load cart and likes from storage
-    Cart.load();
-    Likes.load();
-
-    // Get all product cards
     const cards = document.querySelectorAll('.card-gallery');
 
-    // Initialize each card
     cards.forEach(card => {
-        // Initialize slideshow
         initializeSlideshow(card);
-
-        // Initialize add to cart button
-        const addButton = card.querySelector('.quick-add__button');
-        if (addButton) {
-            handleAddToCart(addButton);
-        }
-
-        // Initialize like button
-        const likeButton = card.querySelector('.like-button');
-        if (likeButton) {
-            handleLikeButton(likeButton);
-
-            // Restore liked state and count from localStorage
-            const productId = likeButton.dataset.productId;
-            const counterSpan = likeButton.querySelector('.like-counter');
-            
-            // Set the counter display
-            const count = Likes.getCount(productId);
-            counterSpan.textContent = count;
-            
-            // Set liked state if user has liked this product
-            if (Likes.has(productId)) {
-                likeButton.classList.add('liked');
-            }
-        }
     });
 
-    console.log('Product gallery initialized with', cards.length, 'products');
+
+    // ADD THESE CART EVENT LISTENERS:
+    const closeCartBtn = document.getElementById('close-cart');
+    const cartOverlay = document.getElementById('cart-overlay');
+    const continueShoppingBtn = document.getElementById('continue-shopping');
+    const cartLink = document.querySelector('a[href="#Cart"]');
+    
+    if (closeCartBtn) {
+        closeCartBtn.addEventListener('click', closeCart);
+    }
+    
+    if (cartOverlay) {
+        cartOverlay.addEventListener('click', closeCart);
+    }
+    
+    if (continueShoppingBtn) {
+        continueShoppingBtn.addEventListener('click', closeCart);
+    }
+    
+    if (cartLink) {
+        cartLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openCart();
+        });
+    }
+    
+    // ADD THESE CART INITIALIZATION CALLS:
+    setupAddToCartButtons();
+    loadCart();
+
+    console.log('Initialized', cards.length, 'product cards');
 }
 
 // Run initialization when DOM is fully loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+document.addEventListener('DOMContentLoaded', init);

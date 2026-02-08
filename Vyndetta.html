@@ -134,32 +134,31 @@
             <main>
                 <div class="product-grid">
                     <!-- Product Card 1 -->
-              <div class="card-gallery">
+                    <div class="card-gallery">
                             <div class="slideshow">
                                 <div class="slides">
+                                 <a href="product_0.html" > <!-- linked to produt's page -->
                                     <img src="images\Screenshot 2023-12-02 171525.png" alt="Yours Cruelly, ELVIRA" class="active">
-                                    <img src="images\509.png"  alt="Yours Cruelly, ELVIRA">
+                                    <img src=""  alt="Yours Cruelly, ELVIRA">
+                                    </a>
                                 </div>
                                 <div class="dots">
                                     <button class="dot active"></button>
                                     <button class="dot"></button>
                                 </div>
                             </div>
-                            <div class="product-details">
-                                <h3 class="product-title">Details</h3>
-                            </div>
-
-
-
-                            
-                        
+           
                         
                             
-                        
-                        <div class="product-info-overlay">
-                                <h3 class="product-title">Free R Kelly</h3>
-                                <p class="product-price">$9.00 USD</p>
-                        </div>                                         
+                               <div class="icons">
+                                        <a href="#" class="fas fa-heart"></a>
+                                     <a href="#" class="fas fa-shopping-cart"></a>
+                                     <a href="#" class="fas fa-share"></a>
+                               </div>                                                    
+                                <div class="product-info-overlay">
+                                    <h3 class="product-title">Free R Kelly</h3>
+                                    <p class="product-price">$9.00 USD</p>
+                                </div>                                         
                       
                     </div>
 
@@ -175,9 +174,13 @@
                                     <button class="dot"></button>
                                 </div>
                             </div>
-                            <div class="product-details">
-                                <h3 class="product-title">Details</h3>
-                            </div>
+                           
+                                  <div class="icons">
+                                        <a href="#" class="fas fa-heart"></a>
+                                     <a href="#" class="fas fa-shopping-cart"></a>
+                                     <a href="#" class="fas fa-share"></a>
+                                </div>
+                        
 
 
 
@@ -187,7 +190,7 @@
                             
                         
                         <div class="product-info-overlay">
-                                <h3 class="product-title">Free R Kelly</h3>
+                                <h3 class="product-title">details</h3>
                                 <p class="product-price">$9.00 USD</p>
                         </div>                                         
                       
@@ -209,6 +212,12 @@
                             <div class="product-details">
                                 <h3 class="product-title">XXX</h3>
                             </div>
+                                  <div class="icons">
+                                        <a href="#" class="fas fa-heart"></a>
+                                     <a href="#" class="fas fa-shopping-cart"></a>
+                                     <a href="#" class="fas fa-share"></a>
+                                </div>
+                        
 
 
 
@@ -239,20 +248,23 @@
                             <div class="product-details">
                                 <h3 class="product-title">Details</h3>
                             </div>
-
-
-
-                            
-                        
-                        
-                            
-                        
-                        <div class="product-info-overlay">
-                                <h3 class="product-title">Free R Kelly</h3>
-                                <p class="product-price">$9.00 USD</p>
-                        </div>                                         
+                                  <div class="icons">
+                                        <a href="#" class="fas fa-heart"></a>
+                                     <a href="#" class="fas fa-shopping-cart"></a>
+                                     <a href="#" class="fas fa-share"></a>
+                                </div>                                                
+                                    <div class="product-info-overlay">
+                                         <h3 class="product-title">Free R Kelly</h3>
+                                         <p class="product-price">$9.00 USD</p>
+                                    </div>                                         
                       
+                                </div>
+
+           
+                            </div>
                     </div>
+
+
                 </div>
             </main>
         </div>
@@ -283,7 +295,7 @@
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>Company</h3>
+                <h3>VYNDETTA.</h3>
                 <ul>
                     <li><a href="#">About Us</a></li>
                     <li><a href="#">Privacy Policy</a></li>
@@ -292,7 +304,7 @@
             </div>
             <div class="footer-section">
                 <h3>Stay Connected</h3>
-                <p>Subscribe</p>
+            
                 <form class="newsletter-form">
                     <input type="email" placeholder="Your email">
                     <button type="submit">Join</button>
@@ -311,28 +323,38 @@
 
     <!-- Cart Sidebar -->
   
-    <!--
-    <div class="cart-overlay" id="cart-overlay"></div>
-    <div class="cart-sidebar" id="cart-sidebar">
-        <div class="cart-header">
+<!-- Cart Sidebar - REPLACE YOUR EXISTING CART SECTION (around line 353-366) WITH THIS -->
+
+<!-- Cart Overlay -->
+<div class="cart-overlay" id="cart-overlay"></div>
+
+<!-- Cart Sidebar -->
+<div class="cart-sidebar" id="cart-sidebar">
+     <div class="cart-header">
             <h2>Shopping Cart</h2>
-            <button class="close-cart" id="close-cart">×</button>
-        </div>
-        <div class="cart-items" id="cart-items">
-            <div class="empty-cart">
-                <p>Your cart is empty</p>
-            </div>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total:</span>
-                <span id="cart-total">$0.00</span>
-            </div>
-            <button class="checkout-btn">Checkout</button>
+             <button class="close-cart" id="close-cart">&times;</button>
+     </div>
+    
+    <div class="cart-items" id="cart-items">
+        <div class="empty-cart">
+            <i class="fas fa-shopping-bag"></i>
+            <p>Your cart is empty</p>
         </div>
     </div>
-
-    -->
+    
+        <div class="cart-footer">
+        <div class="cart-subtotal">
+            <span>Subtotal:</span>
+            <span id="cart-subtotal">$0.00</span>
+        </div>
+        <div class="cart-total">
+            <span>Total:</span>
+            <span id="cart-total">$0.00</span>
+        </div>
+        <button class="checkout-btn">Proceed to Checkout</button>
+        <button class="continue-shopping" id="continue-shopping">Continue Shopping</button>
+    </div>
+</div>
     
 
 
@@ -347,6 +369,7 @@
     <script type="module" src="3d_animation.js"></script>
     <script src="script.js"></script>
     <script src="background_music.js"></script>
+
     
 </body>
 
